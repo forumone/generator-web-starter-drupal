@@ -40,6 +40,9 @@ module.exports = generators.Base.extend({
         default: config.drupal_theme,
       }], function (answers) {
         this.config.set(answers);
+        // Expose the answers on the parent generator
+        _.extend(this.options.parent.answers, { 'web-starter-drupal' : answers });
+        
         done();
       }.bind(this));
     },
