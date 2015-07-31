@@ -53,6 +53,10 @@ module.exports = generators.Base.extend({
     },
     make : function() {
       console.log('writing:make');
+    },
+    settings : function() {
+      var config = this.config.getAll();
+      this.template('public/sites/default/settings.vm.php', 'public/sites/default/settings.vm.php', config);
     }
   }
 });
