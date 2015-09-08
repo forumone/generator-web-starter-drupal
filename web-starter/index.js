@@ -41,6 +41,27 @@ module.exports = generators.Base.extend({
       done();
     }.bind(this));
   },
+  configuring : {
+    addCapistrano : function() {
+      var config = this.config.getAll();
+      
+      // If we're using Capistrano set some additional values
+      if (_.has(this.options.parent.answers, 'web-starter-capistrano')) {
+        _.extend(this.options.parent.answers['web-starter-capistrano'].config, {
+          drupal_features : config.features,
+          drupal_cmi : config.cmi,
+          drupal_db_updates : 'true',
+          linked_dirs : '%w[/vagrant/public/sites/default/files]'
+        });
+      }
+    },
+    addSolr : function() {
+      // Set local variable for Solr if the user has selected to use Puppet
+      if (_.has(this.options.parent.answers, 'web-starter-puppet')) {
+        this.options.parent.answers['web-starter-drupal'].solr = this.options.parent.answers['web-starter-puppet'].solr
+      }
+    }
+  },
   writing : {
     aliases : function() {
       console.log('writing:aliases');
@@ -51,8 +72,15 @@ module.exports = generators.Base.extend({
     settings : function() {
       var done = this.async();
       
-      var config = this.config.getAll();
-      this.template('public/sites/default/settings.vm.php', 'public/sites/default/settings.vm.php', config);
+      // Get current system config for this sub-generator
+      var config = this.options.parent.answers['web-starter-drupal'];
+      _.extend(config, this.options.parent.answers);
+      
+      this.fs.copyTpl(
+        this.templatePath('public/sites/default/settings.vm.php'),
+        this.destinationPath('public/sites/default/settings.vm.php'),
+        config
+      );
       
       done();
     }
