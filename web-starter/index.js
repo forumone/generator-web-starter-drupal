@@ -60,6 +60,9 @@ module.exports = generators.Base.extend({
       if (_.has(this.options.parent.answers, 'web-starter-puppet')) {
         this.options.parent.answers['web-starter-drupal'].solr = this.options.parent.answers['web-starter-puppet'].solr
       }
+    },
+    setThemePath : function() {
+      this.options.parent.answers.theme_gemfile = 'sites/all/themes/' + this.options.parent.answers['web-starter-drupal'].drupal_theme + '/Gemfile';
     }
   },
   writing : {
