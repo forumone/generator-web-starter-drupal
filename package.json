@@ -44,5 +44,9 @@
   ],
   "files": [
     "web-starter"
-  ]
+  ],
+  "webStarter": {
+  	"category": "Platform",
+  	"name": "Drupal"
+  }
 }
