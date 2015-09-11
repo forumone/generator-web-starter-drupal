@@ -50,7 +50,7 @@ module.exports = generators.Base.extend({
           drupal_features : config.features,
           drupal_cmi : config.cmi,
           drupal_db_updates : 'true',
-          linked_dirs : '%w[/vagrant/public/sites/default/files]'
+          linked_dirs : '%w[public/sites/default/files]'
         });
       }
     },
