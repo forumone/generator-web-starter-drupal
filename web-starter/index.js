@@ -61,7 +61,9 @@ module.exports = generators.Base.extend({
       }
     },
     setThemePath : function() {
-      this.options.parent.answers.theme_gemfile = 'public/sites/all/themes/' + this.options.parent.answers['web-starter-drupal'].drupal_theme + '/Gemfile';
+      var theme_path = 'public/sites/all/themes/' + this.options.parent.answers['web-starter-drupal'].drupal_theme;
+      this.options.parent.answers.theme_path = theme_path;
+      this.options.parent.answers.theme_gemfile = theme_path + '/Gemfile';
     }
   },
   writing : {
