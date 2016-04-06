@@ -1,6 +1,6 @@
 {
   "name": "generator-web-starter-drupal",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A Drupal yeoman sub-generator for web-starter",
   "keywords": [
     "yeoman-generator"
@@ -17,7 +17,11 @@
     "url": "git://github.com/forumone/generator-web-starter-drupal.git"
   },
   "dependencies": {
-    "lodash": "^3.10.0",
+    "bluebird": "^3.3.4",
+    "glob": "^7.0.3",
+    "lodash": "^4.6",
+    "request-promise": "^2.0.1",
+    "semver": "^5.1.0",
     "update-notifier": "^0.2.2",
     "yeoman-generator": "~0.20",
     "yosay": "^1.0.0"
@@ -38,7 +42,7 @@
     "web-starter"
   ],
   "webStarter": {
-  	"category": "Platform",
-  	"name": "Drupal"
+    "category": "Platform",
+    "name": "Drupal"
   }
 }
