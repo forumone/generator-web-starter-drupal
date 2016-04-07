@@ -92,7 +92,7 @@ module.exports = generators.Base.extend({
         {
           type: 'input',
           name: 'drupal_theme',
-          message: 'Theme name',
+          message: 'Theme name (machine name)',
           default: config.drupal_theme,
         },
         {
