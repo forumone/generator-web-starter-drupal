@@ -138,6 +138,10 @@ module.exports = generators.Base.extend({
       if (_.has(this.options.parent.answers, 'web-starter-puppet')) {
         this.options.parent.answers['web-starter-drupal'].solr = this.options.parent.answers['web-starter-puppet'].solr
       }
+      else {
+        // for it to work even without puppet generator selected 
+        this.options.parent.answers['web-starter-drupal'].solr = false;
+      }
     },
     setThemePath : function() {
       this.options.parent.answers.theme_path = 'public/sites/all/themes/' + this.options.parent.answers['web-starter-drupal'].drupal_theme;
