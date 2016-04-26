@@ -145,6 +145,12 @@ module.exports = generators.Base.extend({
     },
     setThemePath : function() {
       this.options.parent.answers.theme_path = 'public/sites/all/themes/' + this.options.parent.answers['web-starter-drupal'].drupal_theme;
+    },
+    setGruntTask : function() {
+      if(this.options.getPlugin('grunt')) {
+        this.options.getPlugin('grunt').addGruntTasks('watch', 'grunt-contrib-watch', 'compass', "{files : [ '<%= pkg.themePath %>/sass/**/*.scss' ], tasks : [ 'compass:' + environment ],}");
+        this.options.addDevDependency('grunt-contrib-watch', '^0.6.1');
+      }
     }
   },
   writing : {
