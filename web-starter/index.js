@@ -4,10 +4,14 @@ var generators = require('yeoman-generator'),
   Promise = require('bluebird'),
   rp = require('request-promise'),
   semver = require('semver'),
-  glob = Promise.promisify(require('glob'));
+  glob = Promise.promisify(require('glob')),
+  ygp = require('yeoman-generator-bluebird');
 
 module.exports = generators.Base.extend({
   initializing : {
+    async : function() {
+      ygp(this);
+    },
     platform : function() {
       // Set the platform
       this.options.parent.answers.platform = 'drupal';
@@ -65,7 +69,7 @@ module.exports = generators.Base.extend({
           return tag.name;
         })
         .value();
-
+      
       // If we have an existing version ensure it's available in the list
       if (!_.isEmpty(config.wp_version) && !_.find(tags, config.drupal_version)) {
         tags.push(config.drupal_version);
@@ -75,41 +79,39 @@ module.exports = generators.Base.extend({
         config.drupal_version = tags[0];
       }
       
-      return new Promise(function(resolve, reject) {
-        that.prompt([{
-          type : 'list',
-          name : 'drupal_version',
-          choices : tags,
-          message : 'Select a version of Drupal',
-          default : config.drupal_version,
-        },
-        {
-          type: 'confirm',
-          name: 'features',
-          message: 'Does it use the Features module?',
-          default: config.features,
-        },
-        {
-          type: 'confirm',
-          name: 'cmi',
-          message: 'Does it use the Configuration module?',
-          default: config.cmi,
-        },
-        {
-          type: 'input',
-          name: 'drupal_theme',
-          message: 'Theme name (machine name)',
-          default: config.drupal_theme,
-        },
-        {
-          type: 'confirm',
-          name: 'install_drupal',
-          message: 'Install a fresh copy of Drupal?',
-          default: false,
-        }], function (answers) {
-          resolve(answers);
-        })
-      });
+      return tags;
+    }).then(function(tags) {
+      return this.promptAsync([{
+        type : 'list',
+        name : 'drupal_version',
+        choices : tags,
+        message : 'Select a version of Drupal',
+        default : config.drupal_version,
+      },
+      {
+        type: 'confirm',
+        name: 'features',
+        message: 'Does it use the Features module?',
+        default: config.features,
+      },
+      {
+        type: 'confirm',
+        name: 'cmi',
+        message: 'Does it use the Configuration module?',
+        default: config.cmi,
+      },
+      {
+        type: 'input',
+        name: 'drupal_theme',
+        message: 'Theme name (machine name)',
+        default: config.drupal_theme,
+      },
+      {
+        type: 'confirm',
+        name: 'install_drupal',
+        message: 'Install a fresh copy of Drupal?',
+        default: false,
+      }]);
     }).then(function(answers) {
       that.config.set(answers);
 
