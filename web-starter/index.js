@@ -79,9 +79,9 @@ module.exports = generators.Base.extend({
         config.drupal_version = tags[0];
       }
       
-      return tags;
+      return Promise.resolve(tags);
     }).then(function(tags) {
-      return this.promptAsync([{
+      return that.promptAsync([{
         type : 'list',
         name : 'drupal_version',
         choices : tags,
@@ -153,32 +153,22 @@ module.exports = generators.Base.extend({
 
       if (config.install_drupal) {
         // Create a Promise for remote downloading
-        var remote = new Promise(function(resolve, reject) {
-          that.remote('drupal', 'drupal', config.drupal_version, function(err, remote) {
-            if (err) {
-              reject(err);
-            }
-            else {
-              resolve(remote);
-            }
-          });
-        });
-        
-        // Begin Promise chain
-        remote.bind(this).then(function(remote) {
-          this.remote = remote;
+        this.remoteAsync('drupal', 'drupal', config.drupal_version)
+        .bind({})
+        .then(function(remote) {
+          this.remotePath = remote.cachePath;
           return glob('**', { cwd : remote.cachePath });
-        }).then(function(files) {
-          var remote = this.remote;
-          
+        })
+        .then(function(files) {
+          var remotePath = this.remotePath;
           _.each(files, function(file) {
             that.fs.copy(
-              remote.cachePath + '/' + file,
+              remotePath + '/' + file,
               that.destinationPath('public/' + file)
             );
           });
-        }).finally(function() {
-          // Declare we're done
+        })
+        .finally(function() {
           done();
         });
       }
