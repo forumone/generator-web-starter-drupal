@@ -137,9 +137,7 @@ module.exports = generators.Base.extend({
     },
     addSolr : function() {
       // Set local variable for Solr if the user has selected to use Puppet
-      if (_.has(this.options.parent.answers, 'web-starter-puppet')) {
-        this.options.parent.answers['web-starter-drupal'].solr = this.options.parent.answers['web-starter-puppet'].solr
-      }
+      this.options.parent.answers['web-starter-drupal'].solr = (_.has(this.options.parent.answers, 'web-starter-puppet')) ? this.options.parent.answers['web-starter-puppet'].solr : false;
     },
     setThemePath : function() {
       this.options.parent.answers.theme_path = 'public/sites/all/themes/' + this.options.parent.answers['web-starter-drupal'].drupal_theme;
