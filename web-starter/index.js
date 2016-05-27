@@ -4,10 +4,16 @@ var generators = require('yeoman-generator'),
   Promise = require('bluebird'),
   rp = require('request-promise'),
   semver = require('semver'),
-  glob = Promise.promisify(require('glob'));
+  glob = Promise.promisify(require('glob')),
+  pkg = require('../package.json'),
+  ygp = require('yeoman-generator-bluebird');
 
 module.exports = generators.Base.extend({
   initializing : {
+    async : function() {
+      ygp(this);
+      this.options.addDevDependency(pkg.name, pkg.version);
+    },
     platform : function() {
       // Set the platform
       this.options.parent.answers.platform = 'drupal';
@@ -65,7 +71,7 @@ module.exports = generators.Base.extend({
           return tag.name;
         })
         .value();
-
+      
       // If we have an existing version ensure it's available in the list
       if (!_.isEmpty(config.wp_version) && !_.find(tags, config.drupal_version)) {
         tags.push(config.drupal_version);
@@ -75,41 +81,39 @@ module.exports = generators.Base.extend({
         config.drupal_version = tags[0];
       }
       
-      return new Promise(function(resolve, reject) {
-        that.prompt([{
-          type : 'list',
-          name : 'drupal_version',
-          choices : tags,
-          message : 'Select a version of Drupal',
-          default : config.drupal_version,
-        },
-        {
-          type: 'confirm',
-          name: 'features',
-          message: 'Does it use the Features module?',
-          default: config.features,
-        },
-        {
-          type: 'confirm',
-          name: 'cmi',
-          message: 'Does it use the Configuration module?',
-          default: config.cmi,
-        },
-        {
-          type: 'input',
-          name: 'drupal_theme',
-          message: 'Theme name (machine name)',
-          default: config.drupal_theme,
-        },
-        {
-          type: 'confirm',
-          name: 'install_drupal',
-          message: 'Install a fresh copy of Drupal?',
-          default: false,
-        }], function (answers) {
-          resolve(answers);
-        })
-      });
+      return Promise.resolve(tags);
+    }).then(function(tags) {
+      return that.promptAsync([{
+        type : 'list',
+        name : 'drupal_version',
+        choices : tags,
+        message : 'Select a version of Drupal',
+        default : config.drupal_version,
+      },
+      {
+        type: 'confirm',
+        name: 'features',
+        message: 'Does it use the Features module?',
+        default: config.features,
+      },
+      {
+        type: 'confirm',
+        name: 'cmi',
+        message: 'Does it use the Configuration module?',
+        default: config.cmi,
+      },
+      {
+        type: 'input',
+        name: 'drupal_theme',
+        message: 'Theme name (machine name)',
+        default: config.drupal_theme,
+      },
+      {
+        type: 'confirm',
+        name: 'install_drupal',
+        message: 'Install a fresh copy of Drupal?',
+        default: false,
+      }]);
     }).then(function(answers) {
       that.config.set(answers);
 
@@ -135,13 +139,7 @@ module.exports = generators.Base.extend({
     },
     addSolr : function() {
       // Set local variable for Solr if the user has selected to use Puppet
-      if (_.has(this.options.parent.answers, 'web-starter-puppet')) {
-        this.options.parent.answers['web-starter-drupal'].solr = this.options.parent.answers['web-starter-puppet'].solr
-      }
-      else {
-        // for it to work even without puppet generator selected 
-        this.options.parent.answers['web-starter-drupal'].solr = false;
-      }
+      this.options.parent.answers['web-starter-drupal'].solr = (_.has(this.options.parent.answers, 'web-starter-puppet')) ? this.options.parent.answers['web-starter-puppet'].solr : false;
     },
     setThemePath : function() {
       this.options.parent.answers.theme_path = 'public/sites/all/themes/' + this.options.parent.answers['web-starter-drupal'].drupal_theme;
@@ -155,32 +153,22 @@ module.exports = generators.Base.extend({
 
       if (config.install_drupal) {
         // Create a Promise for remote downloading
-        var remote = new Promise(function(resolve, reject) {
-          that.remote('drupal', 'drupal', config.drupal_version, function(err, remote) {
-            if (err) {
-              reject(err);
-            }
-            else {
-              resolve(remote);
-            }
-          });
-        });
-        
-        // Begin Promise chain
-        remote.bind(this).then(function(remote) {
-          this.remote = remote;
+        this.remoteAsync('drupal', 'drupal', config.drupal_version)
+        .bind({})
+        .then(function(remote) {
+          this.remotePath = remote.cachePath;
           return glob('**', { cwd : remote.cachePath });
-        }).then(function(files) {
-          var remote = this.remote;
-          
+        })
+        .then(function(files) {
+          var remotePath = this.remotePath;
           _.each(files, function(file) {
             that.fs.copy(
-              remote.cachePath + '/' + file,
+              remotePath + '/' + file,
               that.destinationPath('public/' + file)
             );
           });
-        }).finally(function() {
-          // Declare we're done
+        })
+        .finally(function() {
           done();
         });
       }
