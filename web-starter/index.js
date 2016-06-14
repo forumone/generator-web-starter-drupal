@@ -143,6 +143,7 @@ module.exports = generators.Base.extend({
     },
     setThemePath : function() {
       this.options.parent.answers.theme_path = 'public/sites/all/themes/' + this.options.parent.answers['web-starter-drupal'].drupal_theme;
+      this.options.parent.answers.build_path = 'public/sites/all/themes/' + this.options.parent.answers['web-starter-drupal'].drupal_theme;
     }
   },
   writing : {
