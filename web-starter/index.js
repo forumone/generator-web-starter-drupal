@@ -20,7 +20,6 @@ module.exports = generators.Base.extend({
     }
   },
   prompting : function() {
-    var done = this.async();
     var that = this;
     
     var config = _.extend({
@@ -31,12 +30,13 @@ module.exports = generators.Base.extend({
     }, this.config.getAll());
 
     
-    rp({ 
+    return rp({ 
       url : 'https://api.github.com/repos/drupal/drupal/tags?per_page=100',
       headers : {
         'User-Agent' : 'generator-web-starter-drupal',
       }
-    }).then(function(response) {
+    })
+    .then(function(response) {
       var tags = _.chain(JSON.parse(response))
         .map(function(tag) {
           var name = tag.name;
@@ -82,8 +82,9 @@ module.exports = generators.Base.extend({
       }
       
       return Promise.resolve(tags);
-    }).then(function(tags) {
-      return that.promptAsync([{
+    })
+    .then(function(tags) {
+      return that.prompt([{
         type : 'list',
         name : 'drupal_version',
         choices : tags,
@@ -114,13 +115,12 @@ module.exports = generators.Base.extend({
         message: 'Install a fresh copy of Drupal?',
         default: false,
       }]);
-    }).then(function(answers) {
+    })
+    .then(function(answers) {
       that.config.set(answers);
 
       // Expose the answers on the parent generator
       _.extend(that.options.parent.answers, { 'web-starter-drupal' : answers });
-    }).finally(function() {
-      done();
     });
   },
   configuring : {
@@ -149,12 +149,11 @@ module.exports = generators.Base.extend({
   writing : {
     drupal : function() {
       var that = this;
-      var done = this.async();
       var config = this.config.getAll();
 
       if (config.install_drupal) {
         // Create a Promise for remote downloading
-        this.remoteAsync('drupal', 'drupal', config.drupal_version)
+        return this.remoteAsync('drupal', 'drupal', config.drupal_version)
         .bind({})
         .then(function(remote) {
           this.remotePath = remote.cachePath;
@@ -168,13 +167,7 @@ module.exports = generators.Base.extend({
               that.destinationPath('public/' + file)
             );
           });
-        })
-        .finally(function() {
-          done();
         });
-      }
-      else {
-        done();
       }
     },
     aliases : function() {
@@ -184,8 +177,6 @@ module.exports = generators.Base.extend({
       console.log('writing:make');
     },
     settings : function() {
-      var done = this.async();
-      
       // Get current system config for this sub-generator
       var config = this.options.parent.answers['web-starter-drupal'];
       _.extend(config, this.options.parent.answers);
@@ -195,8 +186,6 @@ module.exports = generators.Base.extend({
         this.destinationPath('public/sites/default/settings.vm.php'),
         config
       );
-      
-      done();
     }
   }
 });
