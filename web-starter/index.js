@@ -62,6 +62,9 @@ module.exports = generators.Base.extend({
         .filter(function(tag) {
           return !_.isEmpty(tag.release);
         })
+        .filter(function(tag) {
+          return ('7' == tag.release.substring(0, 1));
+        })
         .groupBy('release')
         .map(function(release) {
           return release.shift();
