@@ -3,10 +3,10 @@ var generators = require('yeoman-generator'),
   _ = require('lodash'),
   Promise = require('bluebird'),
   rp = require('request-promise'),
-  semver = require('semver'),
   glob = Promise.promisify(require('glob')),
   pkg = require('../package.json'),
-  ygp = require('yeoman-generator-bluebird');
+  ygp = require('yeoman-generator-bluebird'),
+  drupal_modules = require('drupal-modules');
 
 module.exports = generators.Base.extend({
   initializing : {
@@ -29,59 +29,17 @@ module.exports = generators.Base.extend({
       drupal_version : ''
     }, this.config.getAll());
 
-    
-    return rp({ 
-      url : 'https://api.github.com/repos/drupal/drupal/tags?per_page=100',
-      headers : {
-        'User-Agent' : 'generator-web-starter-drupal',
-      }
-    })
-    .then(function(response) {
-      var tags = _.chain(JSON.parse(response))
-        .map(function(tag) {
-          var name = tag.name;
-          var release = '';
-          
-          if (!semver.valid(name)) {
-            name = name + '.0';
-          }
-
-          // Prior to version 8 there were no minor version only patch versions
-          if (semver.valid(name)) {
-            if (7 >= parseInt(semver.major(name))) {
-              release = semver.major(name) + '.0';
-            }
-            else {
-              release = semver.major(name) + '.' + semver.minor(name);
-            }
-          }
-          
-          tag.release = release;
-          return tag;
-        })
-        .filter(function(tag) {
-          return !_.isEmpty(tag.release);
-        })
-        .filter(function(tag) {
-          return ('7' == tag.release.substring(0, 1));
-        })
-        .groupBy('release')
+    return drupal_modules.getLatestMinorVersions('drupal').then(function(releases) {
+      var tags = [ _.chain(releases)
+        .filter({ version_major : '7' })
         .map(function(release) {
-          return release.shift();
+          return release.version
         })
-        .orderBy('name', 'desc')
-        .map(function(tag) {
-          return tag.name;
-        })
-        .value();
+        .head()
+        .value() ];
       
-      // If we have an existing version ensure it's available in the list
-      if (!_.isEmpty(config.wp_version) && !_.find(tags, config.drupal_version)) {
+      if (config.drupal_version && tags[0] != config.drupal_version) {
         tags.push(config.drupal_version);
-        _.reverse(tags.sort());
-      }
-      else if (_.isEmpty(config.drupal_version)) {
-        config.drupal_version = tags[0];
       }
       
       return Promise.resolve(tags);
