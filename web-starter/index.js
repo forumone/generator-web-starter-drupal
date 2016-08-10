@@ -21,7 +21,7 @@ module.exports = generators.Base.extend({
   },
   prompting : function() {
     var that = this;
-    
+
     var config = _.extend({
       features : true,
       cmi : false,
@@ -31,17 +31,17 @@ module.exports = generators.Base.extend({
 
     return drupal_modules.getLatestMinorVersions('drupal').then(function(releases) {
       var tags = [ _.chain(releases)
-        .filter({ version_major : '7' })
+        .filter({ version_major : 7 })
         .map(function(release) {
-          return release.version
+          return release.version;
         })
         .head()
         .value() ];
-      
+
       if (config.drupal_version && tags[0] != config.drupal_version) {
         tags.push(config.drupal_version);
       }
-      
+
       return Promise.resolve(tags);
     })
     .then(function(tags) {
