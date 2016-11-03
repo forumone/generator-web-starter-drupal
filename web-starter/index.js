@@ -26,7 +26,8 @@ module.exports = generators.Base.extend({
       features : true,
       cmi : false,
       drupal_theme : '',
-      drupal_version : ''
+      drupal_version : '',
+      drush_version : '7.4.0'
     }, this.config.getAll());
 
     return drupal_modules.getLatestMinorVersions('drupal').then(function(releases) {
@@ -51,6 +52,13 @@ module.exports = generators.Base.extend({
         choices : tags,
         message : 'Select a version of Drupal',
         default : config.drupal_version,
+      },
+      {
+        type    : 'list',
+        name    : 'drush_version',
+        message : 'Drush version',
+        default : config.drush_version,
+        choices : [ '9.0.0-alpha1', '8.1.7', '7.4.0', '6.7.0' ]
       },
       {
         type: 'confirm',
