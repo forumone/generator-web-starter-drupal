@@ -68,7 +68,10 @@ module.exports = generators.Base.extend({
         type: 'input',
         name: 'drupal_theme',
         message: 'Theme name (machine name)',
-        default: config.drupal_theme,
+        default: config.drupal_theme || 'gesso',
+        validate: function (value) {
+          return value !== '';
+        },
       },
       {
         type: 'confirm',
