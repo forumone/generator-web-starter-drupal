@@ -611,6 +611,20 @@ $conf['search_cron_limit'] = 0;
  */
 $conf['file_temporary_path'] = '/tmp';
 
+/**
+ * Report all errors.
+ */
+error_reporting(E_ALL);
+
+/**
+ * Display the errors.
+ */
+ini_set('display_errors', TRUE);
+
+/**
+ * This may be redundant to the above, but is Drupal specific.
+ */
+$conf['error_level'] = ERROR_REPORTING_DISPLAY_ALL;
 
 // Allow optional settings.local.php file
 if (file_exists('./' . conf_path() . '/settings.local.php')) {
