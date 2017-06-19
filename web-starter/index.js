@@ -121,7 +121,11 @@ module.exports = generators.Base.extend({
         .bind({})
         .then(function(remote) {
           this.remotePath = remote.cachePath;
-          return glob('**', { cwd : remote.cachePath });
+          return glob('**', { 
+            cwd : remote.cachePath,
+            dot: true, 
+            nodir: true
+          });
         })
         .then(function(files) {
           var remotePath = this.remotePath;
@@ -134,22 +138,38 @@ module.exports = generators.Base.extend({
         });
       }
     },
-    aliases : function() {
-      console.log('writing:aliases');
-    },
-    make : function() {
-      console.log('writing:make');
-    },
     settings : function() {
       // Get current system config for this sub-generator
       var config = this.options.parent.answers['web-starter-drupal'];
       _.extend(config, this.options.parent.answers);
+
+      var that = this;
       
-      this.fs.copyTpl(
-        this.templatePath('public/sites/default/settings.vm.php'),
-        this.destinationPath('public/sites/default/settings.vm.php'),
-        config
-      );
+      var ignoreFiles = [
+        '**/aliases.drushrc.php'
+      ];
+      
+      return glob('**', {
+        cwd : this.templatePath(''), 
+        dot: true, 
+        nodir : true,
+        ignore : ignoreFiles
+      }).then(function(files) {
+        _.each(files, function(file) {
+          that.fs.copyTpl(that.templatePath(file), that.destinationPath(file), config);
+        });
+        
+        // Don't recreate the alias file if it already exists
+        var aliasFile = config.name + '.aliases.drushrc.php';
+        
+        if (!that.fs.exists('public/sites/all/drush/' + aliasFile)) {
+          return that.fs.copyTpl(
+            that.templatePath('public/sites/all/drush/aliases.drushrc.php'), 
+            that.destinationPath('public/sites/all/drush/' + aliasFile),
+            config
+          );
+        }
+      });
     }
   }
 });
